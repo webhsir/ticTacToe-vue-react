@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+      .square {
+        background: #fff;
+        border: 1px solid #999;
+        float: left;
+        font-size: 24px;
+        font-weight: bold;
+        line-height: 50px;
+        height: 50px;
+        margin-right: -1px;
+        margin-top: -1px;
+        padding: 0;
+        text-align: center;
+        width: 50px;
+        outline: none;
+        cursor: pointer;
+      }
+      .board-row:after {
+        clear: both;
+        content: "";
+        display: table;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div>{{compWinner}}</div>
+      <div style="width: 150px">
+        <button
+          class="square"
+          @click="handelClick(index)"
+          v-for="(item,index) in numArr"
+          :key="index"
+        >
+          {{item}}
+        </button>
+      </div>
+      <div>
+        <p v-for="(item,index) in history" :key="index" @click="jumpTo(index)">
+          {{index == 0?'gameStart':'move to ' + index}}
+        </p>
+      </div>
+    </div>
+    <script>
+      var app = new Vue({
+        el: "#app",
+        data: {
+          message: "Hello Vue!",
+          numArr: Array(9).fill(null),
+          isNext: true,
+          history: [{ numArr: Array(9).fill(null) }],
+          stepNumber: 0,
+        },
+        methods: {
+          calculateWinner(squares) {
+            const lines = [
+              [0, 1, 2],
+              [3, 4, 5],
+              [6, 7, 8],
+              [0, 3, 6],
+              [1, 4, 7],
+              [2, 5, 8],
+              [0, 4, 8],
+              [2, 4, 6],
+            ];
+            for (let i = 0; i < lines.length; i++) {
+              const [a, b, c] = lines[i];
+
+              if (
+                squares[a] &&
+                squares[a] === squares[b] &&
+                squares[a] === squares[c]
+              ) {
+                return squares[a];
+              }
+            }
+            return null;
+          },
+          jumpTo(i) {
+            let current;
+            if (i) {
+              current = this.history[i].slice();
+            } else {
+              current = Array(9).fill(null);
+            }
+            this.numArr = current;
+            this.isNext = i % 2 === 0;
+            this.stepNumber = i;
+          },
+          handelClick(i) {
+            const numArr = this.numArr.slice();
+            if (numArr[i] || this.calculateWinner(numArr)) {
+              return;
+            } else {
+              numArr[i] = this.isNext ? "x" : "o";
+            }
+            this.numArr = numArr;
+            let arr = this.history.slice(0, this.stepNumber + 1);
+            arr.push(numArr);
+
+            this.history = arr;
+            this.stepNumber = this.history.length;
+            this.isNext = !this.isNext;
+          },
+        },
+        computed: {
+          compWinner() {
+            const winner = this.calculateWinner(this.numArr);
+            let msg;
+            if (winner) {
+              msg = "winner is :" + winner;
+            } else {
+              if (this.isNext) {
+                msg = "next is x";
+              } else {
+                msg = "next is o";
+              }
+            }
+            return msg;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
